@@ -146,6 +146,7 @@ if __name__ == "__main__":
 ================================================================================================================================================================================================================
 
 Detailed Explanation of data_pipeline.py
+
 The data_pipeline.py script is a Python implementation for a data pipeline that collects, processes, and stores e-commerce data. Here’s a detailed breakdown of each component and function in the script:
 
 1. Imports and Configuration
