@@ -1,0 +1,187 @@
+Airflow Configuration:
+
+data_pipeline_dag.py
+
+```python
+
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+from airflow.operators.email_operator import EmailOperator
+from datetime import datetime, timedelta
+import logging
+
+# Import functions from the pipeline script
+from data_pipeline import process_data, store_data
+
+# Setup default arguments
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime(2024, 7, 30),
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+# Define the DAG
+dag = DAG(
+    'data_pipeline_dag',
+    default_args=default_args,
+    description='A comprehensive data pipeline DAG',
+    schedule_interval='@hourly',
+)
+
+# Define tasks
+process_data_task = PythonOperator(
+    task_id='process_data',
+    python_callable=process_data,
+    dag=dag,
+)
+
+store_data_task = PythonOperator(
+    task_id='store_data',
+    python_callable=store_data,
+    dag=dag,
+)
+
+# Alert on failure
+alert_task = EmailOperator(
+    task_id='send_failure_alert',
+    to='team@example.com',
+    subject='Data Pipeline Failure Alert',
+    html_content="""<h3>Alert:</h3><p>The data pipeline encountered an error. Please check the logs for details.</p>""",
+    dag=dag,
+)
+
+# Set task dependencies
+process_data_task >> store_data_task
+
+# Notify on failure
+for task in [process_data_task, store_data_task]:
+    task.on_failure_callback = lambda context: alert_task.execute(context)
+```
+
+=============================================================================================================================================================================================================================================
+
+Explanation of data_pipeline_dag.py
+
+The data_pipeline_dag.py file is an Apache Airflow configuration script that defines a Directed Acyclic Graph (DAG) for orchestrating the data pipeline. 
+This DAG specifies the sequence of tasks to be executed, including data processing and storage, and integrates error alerting. Below is a detailed breakdown:
+
+1. Imports
+
+from airflow import DAG
+from airflow.operators.python_operator import PythonOperator
+from airflow.operators.email_operator import EmailOperator
+from datetime import datetime, timedelta
+import logging
+
+# Import functions from the pipeline script
+from data_pipeline import process_data, store_data
+
+* Airflow Imports:
+  DAG: The main class used to define a DAG.
+  PythonOperator: Executes Python functions as tasks.
+  EmailOperator: Sends emails as part of the workflow.
+
+* Standard Imports:
+  datetime and timedelta: Used for defining the schedule and time intervals.
+  logging: Used for logging purposes (though not utilized in the provided code).
+
+2. Default Arguments
+
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime(2024, 7, 30),
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
+
+>> Purpose: Provides default parameters for the DAG.
+  owner: Owner of the DAG.
+  depends_on_past: Indicates whether the task depends on the success of the previous run.
+  start_date: When the DAG should start running.
+  retries: Number of retries if a task fails.
+  retry_delay: Delay between retries.
+
+3. Define the DAG
+
+dag = DAG(
+    'data_pipeline_dag',
+    default_args=default_args,
+    description='A comprehensive data pipeline DAG',
+    schedule_interval='@hourly',
+)
+
+>> Purpose: Creates an instance of a DAG.
+  dag_id: Unique identifier for the DAG.
+  default_args: The default arguments applied to all tasks in the DAG.
+  description: A brief description of what the DAG does.
+  schedule_interval: Frequency of DAG execution (@hourly means every hour).
+
+4. Define Tasks
+  * Process Data Task
+
+process_data_task = PythonOperator(
+    task_id='process_data',
+    python_callable=process_data,
+    dag=dag,
+)
+
+>> Purpose: Executes the process_data function from the data_pipeline module.
+  task_id: Unique identifier for the task.
+  python_callable: The Python function to execute.
+  dag: The DAG to which the task belongs.
+  
+* Store Data Task
+
+store_data_task = PythonOperator(
+    task_id='store_data',
+    python_callable=store_data,
+    dag=dag,
+)
+
+>> Purpose: Executes the store_data function from the data_pipeline module.
+  task_id, python_callable, and dag are similar to the process_data_task configuration.
+
+* Alert on Failure
+
+alert_task = EmailOperator(
+    task_id='send_failure_alert',
+    to='team@example.com',
+    subject='Data Pipeline Failure Alert',
+    html_content="""<h3>Alert:</h3><p>The data pipeline encountered an error. Please check the logs for details.</p>""",
+    dag=dag,
+)
+
+>> Purpose: Sends an email notification if a task fails.
+  task_id: Unique identifier for the email alert task.
+  to: Recipient's email address.
+  subject: Subject of the email.
+  html_content: Body of the email in HTML format.
+  dag: The DAG to which the task belongs.
+
+5. Set Task Dependencies
+
+process_data_task >> store_data_task
+
+>>Purpose: Defines the sequence of tasks. process_data_task must complete successfully before store_data_task starts.
+
+6. Notify on Failure
+
+for task in [process_data_task, store_data_task]:
+    task.on_failure_callback = lambda context: alert_task.execute(context)
+
+>> Purpose: Sets up an error callback to send an alert if either task fails.
+  on_failure_callback: Specifies a function to be called if the task fails.
+  lambda context: alert_task.execute(context): Executes the alert_task to send an email notification with the error context.
+
+Summary:
+
+The data_pipeline_dag.py script is an Airflow DAG configuration that orchestrates the data pipeline. It:
+
+Defines the DAG: Specifies how often the pipeline should run and the default settings.
+Creates Tasks: Configures tasks to process and store data, and send alerts.
+Sets Dependencies: Ensures that tasks are executed in the correct order.
+Handles Failures: Sends email notifications if tasks fail, helping to monitor and troubleshoot pipeline issues.
+
