@@ -1,0 +1,91 @@
+Data Pipeline Setup and Execution Documentation
+
+1. Prerequisites
+
+Make sure you have the following software installed:
+>> Python 3.x: Ensure that you have Python 3.x installed on your system.
+>> Python Libraries: Install the required Python libraries using pip:
+     sh
+     pip install pandas requests google-cloud-storage google-cloud-bigquery mysql-connector-python psycopg2
+
+>> Apache Airflow: Install Airflow using pip:
+     sh
+     pip install apache-airflow
+
+2. Airflow Setup
+
+>> Initialize Airflow Database
+    Airflow requires a database to keep track of task and DAG state. Initialize it by running:
+    sh
+    airflow db init
+
+>> Configure Email Server
+    Set up email configuration in airflow.cfg for the EmailOperator to send alerts. Example configuration:
+    ini
+    [email]
+    email_backend = airflow.utils.email.send_email_smtp
+    smtp_host = smtp.example.com
+    smtp_starttls = True
+    smtp_ssl = False
+    smtp_user = your_email@example.com
+    smtp_password = your_password
+    smtp_port = 587
+
+>> Start Airflow Services
+    * Start Airflow Web Server:
+        sh
+        airflow webserver --port 8080
+  This command starts the web server on port 8080 where you can access the Airflow web interface.
+
+>> Start Airflow Scheduler:
+        sh
+        airflow scheduler
+  The scheduler is responsible for executing the DAGs and their tasks.
+
+3. Deploying the Pipeline
+>> DAG Files: Place the data_pipeline.py and data_pipeline_dag.py files in the Airflow DAGs directory, usually located at ~/airflow/dags.
+
+>> Directory Structure:
+    Ensure your directory structure looks like this:
+      ~/airflow/
+      ├── dags/
+      │   ├── data_pipeline.py
+      │   └── data_pipeline_dag.py
+
+4. Running the Pipeline
+
+>> Access Airflow Web Interface: Open your web browser and go to http://localhost:8080.
+>> Trigger DAG: In the Airflow web interface, find the DAG named data_pipeline_dag and trigger it manually or set it to run on a schedule.
+
+5. Data Quality Metrics
+  
+  To monitor the quality of your data, query the data_quality_metrics table for recent metrics. Use the following SQL query:
+      SELECT * FROM data_quality_metrics ORDER BY timestamp DESC LIMIT 10;
+
+  This query retrieves the most recent 10 records from the data_quality_metrics table.  
+
+6. Alerting
+  
+    Make sure email configuration is correctly set up to receive notifications. 
+    Alerts will help us stay informed about any issues or failures in the pipeline.
+
+
+Bonus: Performance Optimization
+Enhance the performance and efficiency of data pipeline with the following strategies:
+
+Parallel Processing: 
+    Consider using distributed data processing frameworks like Apache Spark or Dask to handle large-scale data processing tasks more efficiently.
+
+Efficient Data Storage: 
+    Opt for columnar storage formats such as Parquet or ORC, which are optimized for querying and can improve performance compared to row-based formats.
+
+Caching: 
+    Implement caching mechanisms for frequently accessed data to reduce retrieval times and lower the load on your data sources.
+
+
+
+
+
+
+
+
