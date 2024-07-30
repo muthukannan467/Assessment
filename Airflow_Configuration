@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import logging
 
 # Import functions from the pipeline script
-from data_pipeline import process_data, store_data
+from data_pipeline import process_data, store_data 
 
 # Setup default arguments
 default_args = {
