@@ -78,6 +78,7 @@ Component:
 >> Transform: Convert data into a consistent format.
 >> Harmonize: Merge data from different sources (e.g., combining web and WhatsApp registrations to identify the same user).
 >> Enrich: Join datasets (e.g., combining user transactions with product details).
+
 Diagram:
 +---------------------------------------------------------------------------------------------------+
 |                                        Data Processing                                          |
@@ -93,6 +94,7 @@ Component:
 Functions:
 >> Metrics: Track the number of records, missing values, duplicates, and processing time.
 >> Latency: Monitor the time taken for data processing to ensure timeliness.
+
 Diagram:
 +-------------------+           +----------------------------+
 | Data Quality      |           |        Data Storage         |
@@ -113,6 +115,7 @@ Component:
 * Data Storage (Google BigQuery)
 >> Purpose: Store the processed data in a scalable, queryable format.
 >> Operations: Load processed data into BigQuery tables, where it can be queried and analyzed for insights.
+
 Diagram:
 +-----------------------------+
 |   Data Storage (BigQuery)   |
@@ -127,6 +130,7 @@ Functions:
 >> Schedule Jobs: Define when and how often tasks should run (e.g., hourly).
 >> Monitor Jobs: Track job execution and performance.
 >> Error Handling & Alerting: Implement error handling and alerting mechanisms (e.g., email notifications) for failures or issues.
+
 Diagram:
 +-----------------------------+
 |   Data Orchestration (Airflow)  |
