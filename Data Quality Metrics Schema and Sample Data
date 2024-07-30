@@ -1,1 +1,21 @@
+Schema for Data Quality Metrics:
+
+```sql
+CREATE TABLE data_quality_metrics (
+    metric_id SERIAL PRIMARY KEY,
+    pipeline_stage VARCHAR(50),
+    metric_name VARCHAR(100),
+    metric_value FLOAT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+```
+
+Sample Data:
+
+```sql
+INSERT INTO data_quality_metrics (pipeline_stage, metric_name, metric_value)
+VALUES
+    ('Data Collection', 'Record Count', 5000),
+    ('Data Processing', 'Null Values', 10),
+    ('Data Storage', 'Storage Size (MB)', 200);
+```
 
