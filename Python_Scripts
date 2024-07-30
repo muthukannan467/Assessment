@@ -143,3 +143,201 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+================================================================================================================================================================================================================
+
+Detailed Explanation of data_pipeline.py
+The data_pipeline.py script is a Python implementation for a data pipeline that collects, processes, and stores e-commerce data. Here’s a detailed breakdown of each component and function in the script:
+
+1. Imports and Configuration
+
+import pandas as pd
+import numpy as np
+import logging
+import requests
+import mysql.connector
+import psycopg2
+from google.cloud import storage
+from datetime import datetime
+
+Libraries Used:
+pandas: For data manipulation and analysis.
+numpy: For numerical operations.
+logging: For logging messages and errors.
+requests: For making HTTP requests to REST APIs.
+mysql.connector: For connecting to MySQL databases.
+psycopg2: For connecting to PostgreSQL databases.
+google.cloud.storage: For accessing Google Cloud Storage.
+datetime: For handling date and time.
+
+2. Logging Setup
+
+logging.basicConfig(filename='data_pipeline.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+>> Purpose: Configures the logging system to write logs to data_pipeline.log with timestamps and log levels.
+
+3. Configuration Constants
+
+MYSQL_CONFIG = { 'user': 'mysql_user', 'password': 'mysql_password', 'host': 'mysql_host', 'database': 'mysql_db' }
+POSTGRES_CONFIG = { 'user': 'postgres_user', 'password': 'postgres_password', 'host': 'postgres_host', 'database': 'postgres_db' }
+GCS_BUCKET_NAME = 'your_bucket_name'
+REST_API_URL = 'https://api.example.com/products'
+MESSAGING_API_URL = 'https://api.example.com/whatsapp_registrations'
+
+>> Purpose: Stores configuration details for database connections and API endpoints.
+
+4. Data Collection Functions
+Each function is responsible for collecting data from different sources:
+
+** PostgreSQL Data Collection
+
+def collect_postgres_data():
+    try:
+        conn = psycopg2.connect(**POSTGRES_CONFIG)
+        query = "SELECT * FROM user_transactions;"
+        data = pd.read_sql(query, conn)
+        conn.close()
+        logging.info("Data collected from PostgreSQL.")
+        return data
+    except Exception as e:
+        logging.error(f"Error collecting data from PostgreSQL: {e}")
+        raise
+>> Purpose: Connects to PostgreSQL, executes a SQL query to retrieve user transactions, and returns the data as a DataFrame.
+
+** Google Cloud Storage Data Collection
+
+def collect_gcs_data():
+    try:
+        client = storage.Client()
+        bucket = client.bucket(GCS_BUCKET_NAME)
+        blob = bucket.blob('web_logs.csv')
+        blob.download_to_filename('web_logs.csv')
+        data = pd.read_csv('web_logs.csv')
+        logging.info("Data collected from Google Cloud Storage.")
+        return data
+    except Exception as e:
+        logging.error(f"Error collecting data from GCS: {e}")
+        raise
+
+>> Purpose: Connects to Google Cloud Storage, downloads a CSV file, and reads it into a DataFrame.
+
+** REST API Data Collection
+
+def collect_rest_api_data():
+    try:
+        response = requests.get(REST_API_URL)
+        data = pd.json_normalize(response.json())
+        logging.info("Data collected from REST API.")
+        return data
+    except Exception as e:
+        logging.error(f"Error collecting data from REST API: {e}")
+        raise
+
+>> Purpose: Makes an HTTP GET request to a REST API, normalizes the JSON response, and converts it into a DataFrame.
+
+** MySQL Data Collection
+
+def collect_mysql_data():
+    try:
+        conn = mysql.connector.connect(**MYSQL_CONFIG)
+        query = "SELECT * FROM web_registrations;"
+        data = pd.read_sql(query, conn)
+        conn.close()
+        logging.info("Data collected from MySQL.")
+        return data
+    except Exception as e:
+        logging.error(f"Error collecting data from MySQL: {e}")
+        raise
+
+>> Purpose: Connects to MySQL, executes a SQL query to retrieve web registrations, and returns the data as a DataFrame.
+
+** WhatsApp Data Collection
+
+def collect_whatsapp_data():
+    try:
+        response = requests.get(MESSAGING_API_URL)
+        data = pd.json_normalize(response.json())
+        logging.info("Data collected from WhatsApp API.")
+        return data
+    except Exception as e:
+        logging.error(f"Error collecting data from WhatsApp API: {e}")
+        raise
+
+>> Purpose: Makes an HTTP GET request to the WhatsApp API, normalizes the JSON response, and converts it into a DataFrame.
+
+5. Data Processing Function
+
+def process_data():
+    try:
+        transactions = collect_postgres_data()
+        web_logs = collect_gcs_data()
+        product_data = collect_rest_api_data()
+        web_registrations = collect_mysql_data()
+        whatsapp_registrations = collect_whatsapp_data()
+        
+        # Data Processing
+        user_registrations = pd.concat([web_registrations, whatsapp_registrations], ignore_index=True)
+        user_registrations.drop_duplicates(subset=['user_id'], keep='first', inplace=True)
+        
+        # Data Enrichment
+        enriched_data = transactions.merge(user_registrations, on='user_id', how='left')
+        enriched_data = enriched_data.merge(product_data, on='product_id', how='left')
+        
+        # Data Quality Check
+        if enriched_data.isnull().sum().sum() > 0:
+            logging.warning("Data contains null values.")
+        
+        logging.info("Data processed successfully.")
+        return enriched_data
+    except Exception as e:
+        logging.error(f"Error processing data: {e}")
+        raise
+
+>> Purpose: Collects data from all sources, merges user registrations from web and WhatsApp, performs data enrichment by joining with transactions and product data, and performs a quality check for null values.
+
+6. Data Storage Function
+
+def store_data(data):
+    try:
+        from google.cloud import bigquery
+        client = bigquery.Client()
+        table_id = 'your_project.your_dataset.processed_data'
+        job = client.load_table_from_dataframe(data, table_id)
+        job.result()  # Waits for the job to complete
+        logging.info("Data stored in Google BigQuery.")
+    except Exception as e:
+        logging.error(f"Error storing data: {e}")
+        raise
+
+>> Purpose: Connects to Google BigQuery and loads the processed data into a designated table.
+
+7. Main Function
+
+def main():
+    try:
+        processed_data = process_data()
+        store_data(processed_data)
+    except Exception as e:
+        logging.error(f"Pipeline failed: {e}")
+        raise
+
+>> Purpose: Runs the data pipeline by calling the process_data function and then storing the processed data using store_data. Handles any exceptions that occur during the pipeline execution.
+
+8. Entry Point
+
+if __name__ == "__main__":
+    main() 
+
+>> Purpose: Ensures that the main function is called when the script is executed directly.
+
+Summary:
+
+The data_pipeline.py script is designed to:
+
+Collect Data: From various sources like PostgreSQL, Google Cloud Storage, REST APIs, MySQL, and WhatsApp.
+Process Data: Clean, validate, and enrich the data, merging different datasets and checking for data quality.
+Store Data: Load the processed data into Google BigQuery for further analysis.
+Log Information: Use logging to track the progress and issues throughout the pipeline.
+
+This script is a foundational implementation that demonstrates a simple end-to-end data pipeline process.
+
+
