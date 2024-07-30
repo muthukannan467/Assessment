@@ -19,3 +19,38 @@ VALUES
     ('Data Storage', 'Storage Size (MB)', 200);
 ```
 
+==============================================================================================================================================================================================
+
+Schema for Data Quality Metrics:
+The schema for the data_quality_metrics table is designed to capture various metrics related to the quality of data at different stages of the data pipeline. 
+Here’s a detailed explanation of each field in the schema:
+
+CREATE TABLE data_quality_metrics (
+    metric_id SERIAL PRIMARY KEY,            -- Unique identifier for each metric entry
+    pipeline_stage VARCHAR(50),              -- Stage in the data pipeline where the metric was collected
+    metric_name VARCHAR(100),                -- Name of the metric being recorded
+    metric_value FLOAT,                      -- Value of the metric
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Timestamp when the metric was recorded
+);
+
+metric_id: A unique identifier for each record in the table, automatically incremented with each new entry.
+pipeline_stage: The specific stage in the data pipeline where the metric is measured (e.g., data collection, processing, storage).
+metric_name: The name of the metric (e.g., "Record Count", "Null Values").
+metric_value: The value of the metric, stored as a float to accommodate different types of measurements.
+timestamp: The time at which the metric was recorded, with a default value of the current timestamp.
+
+Sample Data:
+Here’s how you might insert sample data into the data_quality_metrics table:
+
+INSERT INTO data_quality_metrics (pipeline_stage, metric_name, metric_value)
+VALUES
+    ('Data Collection', 'Record Count', 5000),
+    ('Data Processing', 'Null Values', 10),
+    ('Data Storage', 'Storage Size (MB)', 200);
+
+Record Count: Indicates the number of records collected during the data collection stage. In this example, 5000 records were collected.
+Null Values: Shows the number of null values found in the data during the processing stage. Here, there were 10 null values.
+Storage Size (MB): Represents the size of the data stored in megabytes during the storage stage. The example shows a storage size of 200 MB.
+
+
+
