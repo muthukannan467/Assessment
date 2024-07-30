@@ -1,4 +1,4 @@
-Architecture Diagram:
+Architecture Diagram: 
 
 +-------------------+         +-------------------+         +-----------------+         +-------------------+
 |  PostgreSQL DB    |         | Google Cloud      |         | REST API         |         | MySQL Database    |
